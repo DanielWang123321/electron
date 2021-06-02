@@ -1008,7 +1008,7 @@ void App::SetPath(gin_helper::ErrorThrower thrower,
 
 void App::SetDesktopName(const std::string& desktop_name) {
 #if defined(OS_LINUX)
-  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  auto env = base::Environment::Create();
   env->SetVar("CHROME_DESKTOP", desktop_name);
 #endif
 }
