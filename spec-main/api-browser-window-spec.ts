@@ -3660,11 +3660,12 @@ describe('BrowserWindow module', () => {
         expect(w.webContents.isLoadingMainFrame()).to.be.false('isLoadingMainFrame');
 
         const didStartLoading = emittedOnce(w.webContents, 'did-start-loading');
-        w.webContents.executeJavaScript(`
+        await w.webContents.executeJavaScript(`(() => {
           var iframe = document.createElement('iframe')
           iframe.src = '${serverUrl}/page2'
           document.body.appendChild(iframe)
-        `);
+          return null
+        })()`);
         await didStartLoading;
 
         expect(w.webContents.isLoadingMainFrame()).to.be.false('isLoadingMainFrame');
