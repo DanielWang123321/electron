@@ -7,6 +7,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as WebSocket from 'ws';
 import { emittedOnce, emittedNTimes, emittedUntil } from './events-helpers';
+import { doAsyncWork } from './spec-helpers';
 
 const uuid = require('uuid');
 
@@ -297,30 +298,30 @@ describe('chrome extensions', () => {
     });
 
     it('does not take precedence over Electron webRequest - http', async () => {
-      return new Promise<void>((resolve) => {
-        (async () => {
-          customSession.webRequest.onBeforeRequest((details, callback) => {
-            resolve();
-            callback({ cancel: true });
-          });
-          await w.loadURL(url);
+      const run = async (resolve: Function) => {
+        customSession.webRequest.onBeforeRequest((details, callback) => {
+          resolve();
+          callback({ cancel: true });
+        });
 
-          await customSession.loadExtension(path.join(fixtures, 'extensions', 'chrome-webRequest'));
-          fetch(w.webContents, url);
-        })();
-      });
+        await w.loadURL(url);
+        await customSession.loadExtension(path.join(fixtures, 'extensions', 'chrome-webRequest'));
+        fetch(w.webContents, url);
+      };
+
+      await doAsyncWork(run);
     });
 
-    it('does not take precedence over Electron webRequest - WebSocket', () => {
-      return new Promise<void>((resolve) => {
-        (async () => {
-          customSession.webRequest.onBeforeSendHeaders(() => {
-            resolve();
-          });
-          await w.loadFile(path.join(fixtures, 'api', 'webrequest.html'), { query: { port } });
-          await customSession.loadExtension(path.join(fixtures, 'extensions', 'chrome-webRequest-wss'));
-        })();
-      });
+    it('does not take precedence over Electron webRequest - WebSocket', async () => {
+      const run = async (resolve: Function) => {
+        customSession.webRequest.onBeforeSendHeaders(() => {
+          resolve();
+        });
+        await w.loadFile(path.join(fixtures, 'api', 'webrequest.html'), { query: { port } });
+        await customSession.loadExtension(path.join(fixtures, 'extensions', 'chrome-webRequest-wss'));
+      };
+
+      await doAsyncWork(run);
     });
 
     describe('WebSocket', () => {

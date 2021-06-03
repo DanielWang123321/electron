@@ -32,6 +32,10 @@ export function defer (f: CleanupFunction) {
   cleanupFunctions.unshift(f);
 }
 
+export const doAsyncWork = (fn: Function) => {
+  return new Promise((resolve, reject) => Promise.resolve(fn(resolve)).catch(reject));
+};
+
 class RemoteControlApp {
   process: childProcess.ChildProcess;
   port: number;
